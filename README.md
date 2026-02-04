@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/woff-lib.svg)](https://www.npmjs.com/package/woff-lib)
 
-TypeScript WOFF and WOFF2 encoder and decoder
+TypeScript WOFF and WOFF2 encoder and decoder. Relies on [brotli-lib](https://github.com/countertype/brotli-lib)
 
 ## Install
 
