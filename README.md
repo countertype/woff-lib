@@ -41,7 +41,7 @@ import { woffDecode, woffEncode, woff2Decode, woff2Encode } from 'woff-lib'
 function woff2Decode(data: ArrayBuffer | Uint8Array): Promise<Uint8Array>
 ```
 
-Decodes WOFF2 to TTF/OTF. Async to leverage native Brotli (Node zlib, browser DecompressionStream)
+Decodes WOFF2 to TTF/OTF. Async to use native Brotli (Node zlib, browser DecompressionStream) when available (falls back to pure JS in Chrome)
 
 ### woff2Encode
 
