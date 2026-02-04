@@ -1,0 +1,2 @@
+export { woff2Decode } from './decode/decode'
+export { woff2Encode, type Woff2EncodeOptions } from './encode/encode'

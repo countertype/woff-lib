@@ -1,0 +1,1 @@
+export { woff2Encode, type Woff2EncodeOptions } from './woff2/encode/encode'

@@ -1,0 +1,7 @@
+src/
+test/
+bench/
+*.config.js
+*.config.ts
+tsconfig.json
+.gitignore
