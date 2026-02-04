@@ -96,16 +96,6 @@ WOFF2 decoder includes brotli-lib fallback, which is ~80 KB
 
 Tested on an Apple M2 Max and Node.js 22. WOFF uses native zlib
 
-## Compression
-
-| Font Type | WOFF | WOFF2 | WOFF2 vs WOFF |
-|-----------|------|-------|---------------|
-| TTF | 48% | 36% | 26% smaller |
-| CFF/OTF | 55% | 49% | 12% smaller |
-| Variable TTF | 52% | 49% | 7% smaller |
-
-WOFF2 uses Brotli FONT mode with glyf/loca/hmtx transforms. CFF has fewer transforms so gains are smaller
-
 ## Platform support
 
 - **Node.js** 16+ (uses native zlib)
