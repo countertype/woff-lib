@@ -53,6 +53,13 @@ export default defineConfig([
     ],
     external: ['brotli-lib', 'brotli-lib/decode'],
   },
+  // WOFF2 decode UMD (for script tag usage, bundles brotli-lib)
+  {
+    input: 'src/woff2-decode.ts',
+    output: [
+      { file: 'dist/woff2-decode.umd.js', format: 'iife', name: 'woffLib' },
+    ],
+  },
   // WOFF2 encode only
   {
     input: 'src/woff2-encode.ts',
