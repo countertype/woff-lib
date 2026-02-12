@@ -89,12 +89,16 @@ WOFF2 decoder includes brotli-lib fallback, which is ~80 KB
 
 ## Performance
 
-| Operation | TTF (305 KB) | CFF (253 KB) | Variable (788 KB) |
-|-----------|--------------|--------------|-------------------|
-| woffEncode | 12 ms | 8 ms | 24 ms |
-| woffDecode | 0.8 ms | 0.7 ms | 2.3 ms |
+| Operation | TTF (305 KB) | CFF/OTF (253 KB) | Variable TTF (788 KB) |
+|-----------|--------------|-------------------|----------------------|
+| woff2Encode (q11) | 781 ms | 860 ms | 1,918 ms |
+| woff2Encode (q4) | 7.4 ms | 5.4 ms | 18.3 ms |
+| woff2Decode | 2.4 ms | 1.6 ms | 5.1 ms |
+| woff2Decode (pure JS) | 3.3 ms | 2.6 ms | 7.5 ms |
+| woffEncode | 11.3 ms | 8.4 ms | 23.7 ms |
+| woffDecode | 0.8 ms | 0.7 ms | 2.2 ms |
 
-Tested on an Apple M2 Max and Node.js 22. WOFF uses native zlib
+Tested on Apple M2 Max, Node.js 22. woff2Decode uses native Brotli via `node:zlib` when available, falling back to pure JS ([brotli-lib](https://github.com/countertype/brotli-lib)) in browsers without native Brotli decompression (e.g. Chrome). WOFF uses native zlib
 
 ## Platform support
 

@@ -1,49 +1,49 @@
-import { beforeAll, bench, describe } from 'vitest'
+import { bench, describe } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { woff2Encode } from '../src/woff2/encode/encode'
 
 const fixturesPath = join(__dirname, '../test/fixtures')
 
-let ttfInput: Uint8Array
-let otfInput: Uint8Array
-let varTtfInput: Uint8Array
+function sizeLabel(bytes: number): string {
+  return bytes >= 1024 * 1024
+    ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+    : `${(bytes / 1024).toFixed(1)} KB`
+}
 
-beforeAll(() => {
-  ttfInput = readFileSync(join(fixturesPath, 'dec-enc-ttf.ttf'))
-  otfInput = readFileSync(join(fixturesPath, 'dec-enc-otf.otf'))
-  varTtfInput = readFileSync(join(fixturesPath, 'dec-enc-var-ttf.ttf'))
+const files = [
+  { label: 'TTF', file: 'dec-enc-ttf.ttf' },
+  { label: 'CFF/OTF', file: 'dec-enc-otf.otf' },
+  { label: 'Variable TTF', file: 'dec-enc-var-ttf.ttf' },
+] as const
 
-  console.log(`\n[bench] Input sizes:`)
-  console.log(`  dec-enc-ttf.ttf: ${(ttfInput.byteLength / 1024).toFixed(1)} KB`)
-  console.log(`  dec-enc-otf.otf: ${(otfInput.byteLength / 1024).toFixed(1)} KB`)
-  console.log(`  dec-enc-var-ttf.ttf: ${(varTtfInput.byteLength / 1024).toFixed(1)} KB`)
+const fixtures = files.map((f) => {
+  const input = readFileSync(join(fixturesPath, f.file))
+  // Pre-encode once per quality to get output sizes
+  const q11Size = woff2Encode(input).byteLength
+  const q4Size = woff2Encode(input, { quality: 4 }).byteLength
+  return { label: f.label, input, q11Size, q4Size }
 })
 
+console.log('\n[bench] woff2Encode:')
+for (const f of fixtures) {
+  console.log(
+    `  ${f.label}: ${sizeLabel(f.input.byteLength)} → q11: ${sizeLabel(f.q11Size)}, q4: ${sizeLabel(f.q4Size)}`
+  )
+}
+
 describe('woff2Encode quality 11', () => {
-  bench('TTF', () => {
-    woff2Encode(ttfInput)
-  })
-
-  bench('OTF/CFF', () => {
-    woff2Encode(otfInput)
-  })
-
-  bench('Variable TTF', () => {
-    woff2Encode(varTtfInput)
-  })
+  for (const f of fixtures) {
+    bench(`${f.label} (${sizeLabel(f.input.byteLength)} → ${sizeLabel(f.q11Size)})`, () => {
+      woff2Encode(f.input)
+    })
+  }
 })
 
 describe('woff2Encode quality 4', () => {
-  bench('TTF', () => {
-    woff2Encode(ttfInput, { quality: 4 })
-  })
-
-  bench('OTF/CFF', () => {
-    woff2Encode(otfInput, { quality: 4 })
-  })
-
-  bench('Variable TTF', () => {
-    woff2Encode(varTtfInput, { quality: 4 })
-  })
+  for (const f of fixtures) {
+    bench(`${f.label} (${sizeLabel(f.input.byteLength)} → ${sizeLabel(f.q4Size)})`, () => {
+      woff2Encode(f.input, { quality: 4 })
+    })
+  }
 })

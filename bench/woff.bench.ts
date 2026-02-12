@@ -1,4 +1,4 @@
-import { beforeAll, bench, describe } from 'vitest'
+import { bench, describe } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { woffEncode } from '../src/woff/encode'
@@ -6,53 +6,56 @@ import { woffDecode } from '../src/woff/decode'
 
 const fixturesPath = join(__dirname, '../test/fixtures')
 
-let ttfInput: Uint8Array
-let otfInput: Uint8Array
-let varTtfInput: Uint8Array
-let woffTtf: Uint8Array
-let woffOtf: Uint8Array
-let woffVar: Uint8Array
+function sizeLabel(bytes: number): string {
+  return bytes >= 1024 * 1024
+    ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+    : `${(bytes / 1024).toFixed(1)} KB`
+}
 
-beforeAll(async () => {
-  ttfInput = readFileSync(join(fixturesPath, 'dec-enc-ttf.ttf'))
-  otfInput = readFileSync(join(fixturesPath, 'dec-enc-otf.otf'))
-  varTtfInput = readFileSync(join(fixturesPath, 'dec-enc-var-ttf.ttf'))
+const files = [
+  { label: 'TTF', file: 'dec-enc-ttf.ttf' },
+  { label: 'CFF/OTF', file: 'dec-enc-otf.otf' },
+  { label: 'Variable TTF', file: 'dec-enc-var-ttf.ttf' },
+] as const
 
-  // Pre-encode for decode benchmarks
-  woffTtf = await woffEncode(ttfInput)
-  woffOtf = await woffEncode(otfInput)
-  woffVar = await woffEncode(varTtfInput)
+// Pre-encode/decode at module level
+const encodeFixtures: Array<{ label: string; input: Uint8Array; outputSize: number }> = []
+const decodeFixtures: Array<{ label: string; input: Uint8Array; outputSize: number }> = []
 
-  console.log(`\n[bench] Input sizes:`)
-  console.log(`  TTF: ${(ttfInput.byteLength / 1024).toFixed(1)} KB → ${(woffTtf.byteLength / 1024).toFixed(1)} KB WOFF`)
-  console.log(`  OTF: ${(otfInput.byteLength / 1024).toFixed(1)} KB → ${(woffOtf.byteLength / 1024).toFixed(1)} KB WOFF`)
-  console.log(`  Var: ${(varTtfInput.byteLength / 1024).toFixed(1)} KB → ${(woffVar.byteLength / 1024).toFixed(1)} KB WOFF`)
-})
+for (const f of files) {
+  const input = readFileSync(join(fixturesPath, f.file))
+  const woff = await woffEncode(input)
+  const decoded = await woffDecode(woff)
+
+  encodeFixtures.push({ label: f.label, input, outputSize: woff.byteLength })
+  decodeFixtures.push({ label: f.label, input: woff, outputSize: decoded.byteLength })
+}
+
+console.log('\n[bench] woffEncode:')
+for (const f of encodeFixtures) {
+  console.log(
+    `  ${f.label}: ${sizeLabel(f.input.byteLength)} → ${sizeLabel(f.outputSize)}`
+  )
+}
+console.log('[bench] woffDecode:')
+for (const f of decodeFixtures) {
+  console.log(
+    `  ${f.label}: ${sizeLabel(f.input.byteLength)} → ${sizeLabel(f.outputSize)}`
+  )
+}
 
 describe('woffEncode', () => {
-  bench('TTF', async () => {
-    await woffEncode(ttfInput)
-  })
-
-  bench('OTF/CFF', async () => {
-    await woffEncode(otfInput)
-  })
-
-  bench('Variable TTF', async () => {
-    await woffEncode(varTtfInput)
-  })
+  for (const f of encodeFixtures) {
+    bench(`${f.label} (${sizeLabel(f.input.byteLength)} → ${sizeLabel(f.outputSize)})`, async () => {
+      await woffEncode(f.input)
+    })
+  }
 })
 
 describe('woffDecode', () => {
-  bench('TTF', async () => {
-    await woffDecode(woffTtf)
-  })
-
-  bench('OTF/CFF', async () => {
-    await woffDecode(woffOtf)
-  })
-
-  bench('Variable TTF', async () => {
-    await woffDecode(woffVar)
-  })
+  for (const f of decodeFixtures) {
+    bench(`${f.label} (${sizeLabel(f.input.byteLength)} → ${sizeLabel(f.outputSize)})`, async () => {
+      await woffDecode(f.input)
+    })
+  }
 })
