@@ -3,6 +3,7 @@
 ## 0.1.0 - 2026-11-18
 
 ### Changed
+- Update brotli-lib to 0.1.0
 - Faster WOFF2 decode: glyf is rebuilt in place without per-glyph allocations, and checksums take one pass
 - Faster WOFF2 encode: the glyf transform reads glyf bytes directly instead of parsing glyphs into objects
 - In Node, the ESM build uses zlib directly instead of falling back to web streams
