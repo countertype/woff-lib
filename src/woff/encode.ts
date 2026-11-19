@@ -1,6 +1,8 @@
 // WOFF encoder
 // https://www.w3.org/TR/WOFF/
 
+import { loadNodeZlib } from '../shared/node-zlib'
+
 export interface WoffEncodeOptions {
   /** Compression level 1-9, default 9 */
   level?: number
@@ -18,19 +20,12 @@ let zlibCompress: CompressFn | null = null
 let browserCompress: CompressFn | null = null
 
 function tryLoadZlib(): CompressFn | null {
-  try {
-    if (typeof process !== 'undefined' && process.versions?.node) {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const zlib = require('node:zlib')
-      if (typeof zlib.deflateSync === 'function') {
-        return async (data: Uint8Array, level: number) => {
-          const result = zlib.deflateSync(data, { level })
-          return new Uint8Array(result.buffer, result.byteOffset, result.byteLength)
-        }
-      }
+  const zlib = loadNodeZlib()
+  if (zlib && typeof zlib.deflateSync === 'function') {
+    return async (data: Uint8Array, level: number) => {
+      const result = zlib.deflateSync(data, { level })
+      return new Uint8Array(result.buffer, result.byteOffset, result.byteLength)
     }
-  } catch {
-    // Not in Node or zlib unavailable
   }
   return null
 }

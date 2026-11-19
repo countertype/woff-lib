@@ -1,6 +1,8 @@
 // WOFF decoder
 // https://www.w3.org/TR/WOFF/
 
+import { loadNodeZlib } from '../shared/node-zlib'
+
 const WOFF_SIGNATURE = 0x774f4646 // 'wOFF'
 
 type DecompressFn = (data: Uint8Array) => Promise<Uint8Array>
@@ -9,19 +11,12 @@ let zlibDecompress: DecompressFn | null = null
 let browserDecompress: DecompressFn | null = null
 
 function tryLoadZlib(): DecompressFn | null {
-  try {
-    if (typeof process !== 'undefined' && process.versions?.node) {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const zlib = require('node:zlib')
-      if (typeof zlib.inflateSync === 'function') {
-        return async (data: Uint8Array) => {
-          const result = zlib.inflateSync(data)
-          return new Uint8Array(result.buffer, result.byteOffset, result.byteLength)
-        }
-      }
+  const zlib = loadNodeZlib()
+  if (zlib && typeof zlib.inflateSync === 'function') {
+    return async (data: Uint8Array) => {
+      const result = zlib.inflateSync(data)
+      return new Uint8Array(result.buffer, result.byteOffset, result.byteLength)
     }
-  } catch {
-    // Not in Node or zlib unavailable
   }
   return null
 }
