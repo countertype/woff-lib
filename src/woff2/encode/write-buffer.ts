@@ -26,11 +26,6 @@ export class WriteBuffer {
     this.data[this.pos++] = value
   }
 
-  // Unchecked write for hot paths where capacity is pre-ensured
-  writeU8Fast(value: number): void {
-    this.data[this.pos++] = value
-  }
-
   writeU16(value: number): void {
     this.ensureCapacity(2)
     this.view.setUint16(this.pos, value)
