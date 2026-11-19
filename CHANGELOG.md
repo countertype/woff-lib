@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.0 - 2026-11-18
 
 ### Changed
 - Faster WOFF2 decode: glyf is rebuilt in place without per-glyph allocations, and checksums take one pass
