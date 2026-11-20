@@ -93,6 +93,6 @@
     "vitest": "^3.0.0"
   },
   "dependencies": {
-    "brotli-lib": "^0.1.0"
+    "brotli-lib": "^0.1.1"
   }
 }
