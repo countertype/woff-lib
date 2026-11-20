@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { woff2Encode } from '../src/woff2/encode/encode'
@@ -32,18 +32,24 @@ for (const f of fixtures) {
   )
 }
 
-describe('woff2Encode quality 11', () => {
-  for (const f of fixtures) {
-    bench(`${f.label} (${sizeLabel(f.input.byteLength)} → ${sizeLabel(f.q11Size)})`, () => {
-      woff2Encode(f.input)
-    })
-  }
+// Each run takes seconds, so the default of 64 timed runs is far too many
+test('woff2Encode quality 11', { timeout: 300_000 }, async ({ bench }) => {
+  await bench.compare(
+    ...fixtures.map((f) =>
+      bench(`${f.label} (${sizeLabel(f.input.byteLength)} → ${sizeLabel(f.q11Size)})`, () => {
+        woff2Encode(f.input)
+      })
+    ),
+    { iterations: 5, warmupIterations: 1, warmupTime: 0 }
+  )
 })
 
-describe('woff2Encode quality 4', () => {
-  for (const f of fixtures) {
-    bench(`${f.label} (${sizeLabel(f.input.byteLength)} → ${sizeLabel(f.q4Size)})`, () => {
-      woff2Encode(f.input, { quality: 4 })
-    })
-  }
+test('woff2Encode quality 4', async ({ bench }) => {
+  await bench.compare(
+    ...fixtures.map((f) =>
+      bench(`${f.label} (${sizeLabel(f.input.byteLength)} → ${sizeLabel(f.q4Size)})`, () => {
+        woff2Encode(f.input, { quality: 4 })
+      })
+    )
+  )
 })

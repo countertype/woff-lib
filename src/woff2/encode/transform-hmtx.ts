@@ -38,12 +38,14 @@ export function transformHmtx(
     const glyphOffset = glyphOffsets[i]
     const glyphLength = glyphOffsets[i + 1] - glyphOffset
     
-    // Get glyph xMin (0 for empty glyphs)
+    // The decoder restores a dropped LSB from the glyph xMin, which is 0 for
+    // glyphs without an outline (empty or zero contours)
     let xMin = 0
     if (glyphLength > 0) {
       const glyphStart = glyfEntry.offset + glyphOffset
-      // xMin is at offset 2 in glyph header (after numberOfContours)
-      xMin = font.view.getInt16(glyphStart + 2)
+      if (font.view.getInt16(glyphStart) !== 0) {
+        xMin = font.view.getInt16(glyphStart + 2)
+      }
     }
 
     if (i < numHMetrics) {
@@ -55,7 +57,7 @@ export function transformHmtx(
       advances.push(advance)
       proportionalLsbs.push(lsb)
 
-      if (glyphLength > 0 && lsb !== xMin) {
+      if (lsb !== xMin) {
         canEliminateProportionalLsb = false
       }
     } else {
@@ -65,7 +67,7 @@ export function transformHmtx(
 
       monospaceLsbs.push(lsb)
 
-      if (glyphLength > 0 && lsb !== xMin) {
+      if (lsb !== xMin) {
         canEliminateMonospaceLsb = false
       }
     }

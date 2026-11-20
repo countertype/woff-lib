@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { woffEncode } from '../src/woff/encode'
@@ -44,18 +44,22 @@ for (const f of decodeFixtures) {
   )
 }
 
-describe('woffEncode', () => {
-  for (const f of encodeFixtures) {
-    bench(`${f.label} (${sizeLabel(f.input.byteLength)} → ${sizeLabel(f.outputSize)})`, async () => {
-      await woffEncode(f.input)
-    })
-  }
+test('woffEncode', async ({ bench }) => {
+  await bench.compare(
+    ...encodeFixtures.map((f) =>
+      bench(`${f.label} (${sizeLabel(f.input.byteLength)} → ${sizeLabel(f.outputSize)})`, async () => {
+        await woffEncode(f.input)
+      })
+    )
+  )
 })
 
-describe('woffDecode', () => {
-  for (const f of decodeFixtures) {
-    bench(`${f.label} (${sizeLabel(f.input.byteLength)} → ${sizeLabel(f.outputSize)})`, async () => {
-      await woffDecode(f.input)
-    })
-  }
+test('woffDecode', async ({ bench }) => {
+  await bench.compare(
+    ...decodeFixtures.map((f) =>
+      bench(`${f.label} (${sizeLabel(f.input.byteLength)} → ${sizeLabel(f.outputSize)})`, async () => {
+        await woffDecode(f.input)
+      })
+    )
+  )
 })

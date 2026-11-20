@@ -2,6 +2,7 @@
 // Tries Node zlib, then browser DecompressionStream, then pure JS
 
 import { brotliDecode } from 'brotli-lib/decode'
+import { loadNodeZlib } from '../../shared/node-zlib'
 
 type DecompressFn = (buf: Uint8Array) => Uint8Array
 type AsyncDecompressFn = (buf: Uint8Array) => Promise<Uint8Array>
@@ -13,19 +14,12 @@ let nativeBrotli: DecompressFn | null = null
 let browserBrotli: AsyncDecompressFn | null = null
 
 function tryLoadNative(): DecompressFn | null {
-  try {
-    if (typeof process !== 'undefined' && process.versions?.node) {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const zlib = require('node:zlib')
-      if (typeof zlib.brotliDecompressSync === 'function') {
-        return (buf: Uint8Array) => {
-          const result = zlib.brotliDecompressSync(buf)
-          return new Uint8Array(result.buffer, result.byteOffset, result.byteLength)
-        }
-      }
+  const zlib = loadNodeZlib()
+  if (zlib && typeof zlib.brotliDecompressSync === 'function') {
+    return (buf: Uint8Array) => {
+      const result = zlib.brotliDecompressSync(buf)
+      return new Uint8Array(result.buffer, result.byteOffset, result.byteLength)
     }
-  } catch {
-    // Not in Node or zlib unavailable
   }
   return null
 }
