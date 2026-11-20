@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { test } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { woff2Decode } from '../src/woff2/decode/decode'
@@ -34,12 +34,12 @@ for (let i = 0; i < fixtures.length; i++) {
   )
 }
 
-describe('woff2Decode', () => {
-  for (let i = 0; i < fixtures.length; i++) {
-    const f = fixtures[i]
-    const outSize = outputSizes[i]
-    bench(`${f.label} (${sizeLabel(f.input.byteLength)} → ${sizeLabel(outSize)})`, async () => {
-      await woff2Decode(f.input)
-    })
-  }
+test('woff2Decode', async ({ bench }) => {
+  await bench.compare(
+    ...fixtures.map((f, i) =>
+      bench(`${f.label} (${sizeLabel(f.input.byteLength)} → ${sizeLabel(outputSizes[i])})`, async () => {
+        await woff2Decode(f.input)
+      })
+    )
+  )
 })

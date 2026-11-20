@@ -26,9 +26,9 @@ function tryLoadBrowserDeflate(): DecompressFn | null {
     if (typeof DecompressionStream !== 'undefined') {
       new DecompressionStream('deflate')
       return async (data: Uint8Array): Promise<Uint8Array> => {
-        const stream = new ReadableStream<Uint8Array>({
+        const stream = new ReadableStream<Uint8Array<ArrayBuffer>>({
           start(controller) {
-            controller.enqueue(data)
+            controller.enqueue(data as Uint8Array<ArrayBuffer>)
             controller.close()
           },
         }).pipeThrough(new DecompressionStream('deflate'))

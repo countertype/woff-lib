@@ -36,9 +36,9 @@ function tryLoadBrowserDeflate(): CompressFn | null {
       new CompressionStream('deflate')
       return async (data: Uint8Array, _level: number): Promise<Uint8Array> => {
         // Note: CompressionStream doesn't support level parameter
-        const stream = new ReadableStream<Uint8Array>({
+        const stream = new ReadableStream<Uint8Array<ArrayBuffer>>({
           start(controller) {
-            controller.enqueue(data)
+            controller.enqueue(data as Uint8Array<ArrayBuffer>)
             controller.close()
           },
         }).pipeThrough(new CompressionStream('deflate'))
